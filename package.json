@@ -1,0 +1,43 @@
+{
+  "name": "eyetribe",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Node.js client for The Eye Tribe.",
+  "keywords": [
+    "eye-tracking"
+  ],
+  "homepage": "https://github.com/axelpale/tet-node-client",
+  "main": "index.js",
+  "author": {
+    "name": "Akseli Palen",
+    "email": "akseli.palen@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/axelpale/tet-node-client.git"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "jshint": "latest",
+    "mocha": "^2.1.0",
+    "should": "^5.1.0",
+    "browserify": "^8.0.3",
+    "minifyify": "^5.0.0",
+    "mocha-phantomjs": "^3.5.3",
+    "phantomjs": "^1.9.16",
+    "chai": "latest",
+    "chai-jquery": "^2.0.0",
+    "jquery": "^2.1.3"
+  },
+  "scripts": {
+    "start": "python -m SimpleHTTPServer",
+    "build": "npm run test:lint && npm run build:bundle && npm run build:min && npm run test:headless",
+    "build:bundle": "browserify src/eyetribe.js --standalone eyetribe -o eyetribe.js",
+    "build:min": "browserify src/eyetribe.js --standalone eyetribe --debug --plugin [minifyify --map eyetribe.min.js.map --output eyetribe.min.js.map] > eyetribe.min.js",
+    "test": "npm run test:lint && npm run test:headless",
+    "test:unit": "mocha test/eyetribe.test.js",
+    "test:headless": "mocha-phantomjs test/testrunner.html",
+    "test:lint": "jshint src/* test/*.js"
+  }
+}
