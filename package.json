@@ -29,6 +29,6 @@
     "start": "python -m SimpleHTTPServer",
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "jshint lib/* test/*.js",
-    "test:unit": "mocha test/GazeApiConnection.test.js"
+    "test:unit": "mocha test/*.test.js"
   }
 }
