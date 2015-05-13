@@ -118,7 +118,7 @@ describe('GazeApiConnection', function () {
         });
         done();
       };
-      gazecon.request(req);
+      gazecon.sendRequest(req);
     });
   });
 

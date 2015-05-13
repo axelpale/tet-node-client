@@ -7,7 +7,7 @@
  *   server.close();
  */
 var net = require('net');
-var connectionHandler = require('./connectionHandler');
+var socketHandler = require('./socketHandler');
 
 /**
  * @param {number} port
@@ -30,7 +30,7 @@ var ServerMock = function (port, onListening) {
   var isListening = false;
 
   server = net.createServer(function (socket) {
-    connectionHandler(socket);
+    socketHandler(socket);
   });
 
   // Error handling
@@ -73,11 +73,21 @@ var ServerMock = function (port, onListening) {
   this.getNumConnections = function (callback) {
     if (!isListening) {
       callback(0);
+      return;
     }
-    server.getConnections(function (err, num) {
-      if (err) { console.error(err); callback(0); return; }
-      callback(num);
-    });
+
+    // If client has just connected, the socket has not been yet
+    // forked and therefore connection is not yet counted. For our testing
+    // purposes, it seems that moving getConnections call on the bottom
+    // of the event loop, connections are counted as expected. A simple way
+    // to do this move is to call setTimeout with 0 delay.
+    // See https://nodejs.org/api/net.html#net_server_getconnections_callback
+    setTimeout(function () {
+      server.getConnections(function (err, num) {
+        if (err) { console.error(err); callback(0); return; }
+        callback(num);
+      });
+    }, 0);
   };
 
 };

@@ -1,18 +1,25 @@
 var Response = function (category, request, statuscode) {
 
+  var emptyValues = true;
   var values = {};
 
   this.addValue = function (key, value) {
     values[key] = value;
+    emptyValues = false;
   };
 
   this.getMessage = function () {
-    return {
+    var msg = {
       category: category,
       request: request,
-      statuscode: statuscode,
-      values: values
+      statuscode: statuscode
     };
+
+    if (!emptyValues) {
+      msg.values = values;
+    }
+    
+    return msg;
   };
 };
 
