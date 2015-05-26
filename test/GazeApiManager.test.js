@@ -114,4 +114,23 @@ describe('GazeApiManager', function () {
     });
   });
 
+  describe('#requestAllStates', function () {
+
+    beforeEach(function (done) {
+      apiman.connect(HOST, PORT, function () {
+        done();
+      });
+    });
+
+    it('should get all state values', function (done) {
+
+      responseHandler = function (msg) {
+        msg.should.have.properties('category', 'request', 'values');
+        msg.values.should.have.properties('push', 'iscalibrated', 'version');
+        done();
+      };
+      apiman.requestAllStates();
+    });
+  });
+
 });

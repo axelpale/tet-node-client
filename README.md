@@ -6,32 +6,32 @@ A Node.js client for The Eye Tribe eye-tracker.
 
 # Install (Not yet)
 
-    $ npm install eyetribe
+    $ npm install eyetribe-client
 
 
 
-# Usage (Not yet)
+# Usage
 
-    var eyetribe = require('eyetribe');
-    var client = new eyetribe.Client();
+    var EyeTribeClient = require('eyetribe-client');
+    var eye = new EyeTribeClient();
 
-    client.activate({
+    eye.activate({
       host: 'localhost',
       port: 6555,
       mode: 'push',
       version: 1
     });
 
-    client.on('gazeUpdate', function (x, y) {
+    eye.on('gazeUpdate', function (x, y) {
       // do cool stuff
     });
 
-Get tracker values asynchronously:
+Get tracker state values asynchronously:
 
-    client.activate({...}, function (err) {
+    eye.activate({...}, function (err) {
       if (err) { console.error('Connection failed.'); return; }
 
-      client.getScreen(function (err, screen) {
+      eye.getScreen(function (err, screen) {
         if (err) { console.error(err); return; }
 
         console.log(screen.index); // 1
@@ -46,7 +46,7 @@ Get tracker values asynchronously:
 
 # Calibration (Not yet)
 
-    client.calibrate({
+    eye.calibrate({
       numPoints: 20,
       beforePoint: function (err, index, start, abort) {
         // Here, decide the point location and draw a point to focus to.
@@ -78,6 +78,85 @@ Get tracker values asynchronously:
 
       }
     });
+
+
+
+# API
+
+## EyeTribeClient()
+
+    var eye = new EyeTribeClient();
+
+
+### .activate([options], [onConnectedCb(err)])
+
+    eye.activate({ mode: 'pull'}, function (err) {
+      if (err) {
+        console.error('Tracker could not be activated.');
+      }
+      else {
+        console.log('Tracker activated.');
+      }
+    });
+
+Options are optional, defaults are:
+
+    {
+      host: 'localhost',
+      port: 6555,
+      mode: 'push',
+      version: 1
+    }
+
+The optional callback `onConnectedCb(err)` will be called once. If activation has been successful `err` is `null`.
+
+
+### .deactivate([onDisconnectedCb()])
+
+    eye.deactivate(function () {
+      // Tracker deactivated
+    });
+
+Succeeds always.
+
+
+### .getScreen(callback(err, screen))
+
+    eye.getScreen(function (err, screen) {
+      //
+    });
+
+An example screen object
+
+    {
+      index: 1,
+      resolution: {
+        width: 1440,
+        height: 900
+      },
+      physical: {
+        width: 290,
+        height: 180
+      }
+    }
+
+
+### .getTrackerState(callback(err, stateInteger))
+
+    eye.getTrackerState(function (err, state) {
+      // 0 = tracker device is connected
+      // 1 = tracker device is not connected
+      // 2 = tracker connected but has unsupported unsupported firmware
+      // 3 = tracker connected via insufficient USB connection
+      // 4 = tracker detected but data cannot be transmitted
+    });
+
+
+### .isActivated()
+
+    if (eye.isActivated()) {
+      // Tracker is active.
+    }
 
 
 

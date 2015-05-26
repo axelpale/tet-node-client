@@ -1,4 +1,6 @@
 var protocol = require('../../lib/protocol');
+var Emitter = require('emitter-component');
+var GazeUpdateEmitter = require('./GazeUpdateEmitter');
 var _ = require('lodash');
 
 /**
@@ -6,6 +8,17 @@ var _ = require('lodash');
  */
 
 var Tracker = function () {
+  Emitter(this);
+  var this2 = this;
+
+  var running = false;
+  var gazeUpdateEmitter = new GazeUpdateEmitter();
+
+  gazeUpdateEmitter.on('gazeUpdate', function (frame) {
+    if (running) {
+      this2.emit('gazeUpdate', frame);
+    }
+  });
 
   var state = {
     push: false,
@@ -46,6 +59,29 @@ var Tracker = function () {
 
     // Assign new values ("extend")
     _.assign(state, validSubset);
+
+    if (running) {
+      if (state.push) {
+        gazeUpdateEmitter.start();
+      } else {
+        gazeUpdateEmitter.stop();
+      }
+    }
+  };
+
+  // Allow emitting of events
+  this.start = function () {
+    running = true;
+
+    if (state.push) {
+      gazeUpdateEmitter.start();
+    }
+  };
+
+  // Stop emitting events
+  this.stop = function () {
+    running = false;
+    gazeUpdateEmitter.stop();
   };
 };
 
