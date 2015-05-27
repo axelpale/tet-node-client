@@ -8,29 +8,17 @@ var PORT = 6555;
 var NOOP = function () {};
 
 describe('GazeApiManager', function () {
-
   var apiman, servermock;
 
-  // Tests can listen responses by assigning a function into responseHandler.
-  //   responseHandler = function (msg) { ... };
-  // The value of responseHandler is reseted before each test.
-  var responseHandler = NOOP;
-  var connectionChangeHandler = NOOP;
-
   beforeEach(function (done) {
-    apiman = new GazeApiManager(function onResponse(msg) {
-      responseHandler(msg);
-    }, function onConnectionChanged(isConnected) {
-      connectionChangeHandler(isConnected);
-    });
+    apiman = new GazeApiManager();
     servermock = new ServerMock(PORT, function onListen() {
       done();
     });
   });
 
   afterEach(function (done) {
-    responseHandler = NOOP;
-    connectionChangeHandler = NOOP;
+    apiman.off();
     apiman.close(function () {
       servermock.close(function (err) {
         if (err) { console.error(err); throw err; }
@@ -40,38 +28,37 @@ describe('GazeApiManager', function () {
   });
 
   describe('#connect', function () {
-
     it('should establish a connection with the server', function (done) {
 
-      connectionChangeHandler = function (isConnected) {
-        isConnected.should.be.True;
+      apiman.on('connected', function () {
+        apiman.isConnected().should.be.True;
         servermock.getNumConnections(function (num) {
           num.should.equal(1);
           done();
         });
-      };
+      });
 
       servermock.getNumConnections(function (num) {
         num.should.equal(0);
         apiman.connect(HOST, PORT);
       });
     });
-
   });
 
   describe('#close', function () {
     it('should close the connection to the server', function (done) {
 
-      apiman.connect(HOST, PORT, function (isConnected) {
-        isConnected.should.be.True;
+      apiman.connect(HOST, PORT, function (err) {
+        should(err).equal(null);
 
-        connectionChangeHandler = function (isConnected) {
-          isConnected.should.be.False;
+        apiman.on('disconnected', function (err) {
+          should(err).equal(null);
+          apiman.isConnected().should.equal(false);
           servermock.getNumConnections(function (num) {
             num.should.equal(0);
             done();
           });
-        };
+        });
 
         servermock.getNumConnections(function (num) {
           num.should.equal(1);
@@ -84,9 +71,9 @@ describe('GazeApiManager', function () {
 
   describe('#isConnected', function () {
     it('should tell the state of connection', function (done) {
-      apiman.isConnected().should.be.False;
+      apiman.isConnected().should.equal(false);
       apiman.connect(HOST, PORT, function () {
-        apiman.isConnected().should.be.True;
+        apiman.isConnected().should.equal(true);
         done();
       });
     });
@@ -102,14 +89,15 @@ describe('GazeApiManager', function () {
 
     it('should set tracker values', function (done) {
 
-      responseHandler = function (msg) {
+      apiman.on('response', function (err, msg) {
+        should(err).equal(null);
         msg.should.be.eql({
           'category': 'tracker',
           'request': 'set',
           'statuscode': 200
         });
         done();
-      };
+      });
       apiman.requestSetTracker('pull', 1);
     });
   });
@@ -123,12 +111,12 @@ describe('GazeApiManager', function () {
     });
 
     it('should get all state values', function (done) {
-
-      responseHandler = function (msg) {
+      apiman.on('response', function (err, msg) {
+        should(err).equal(null);
         msg.should.have.properties('category', 'request', 'values');
         msg.values.should.have.properties('push', 'iscalibrated', 'version');
         done();
-      };
+      });
       apiman.requestAllStates();
     });
   });

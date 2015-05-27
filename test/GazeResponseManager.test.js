@@ -10,19 +10,16 @@ var NOOP = function () {};
 describe('GazeResponseManager', function () {
 
   var resman, servermock;
-  var connectionChangeHandler = NOOP;
 
   beforeEach(function (done) {
-    resman = new GazeResponseManager(function (isConnected) {
-      connectionChangeHandler(isConnected);
-    });
+    resman = new GazeResponseManager();
     servermock = new ServerMock(PORT, function onListen() {
       done();
     });
   });
 
   afterEach(function (done) {
-    connectionChangeHandler = NOOP;
+    resman.off();
     resman.close(function () {
       servermock.close(function (err) {
         if (err) { console.error(err); throw err; }
@@ -32,37 +29,32 @@ describe('GazeResponseManager', function () {
   });
 
   describe('#connect', function () {
-
     it('should establish a connection with the server', function (done) {
-
-      connectionChangeHandler = function (isConnected) {
-        isConnected.should.be.True;
+      resman.on('connected', function () {
         servermock.getNumConnections(function (num) {
           num.should.equal(1);
           done();
         });
-      };
-
+      });
       servermock.getNumConnections(function (num) {
         num.should.equal(0);
         resman.connect(HOST, PORT);
       });
     });
-
   });
 
   describe('#close', function () {
     it('should close the connection to the server', function (done) {
+      resman.connect(HOST, PORT, function (err) {
+        should(err).equal(null);
 
-      resman.connect(HOST, PORT, function (isConnected) {
-        isConnected.should.be.True;
-        connectionChangeHandler = function (isConnected) {
-          isConnected.should.be.False;
+        resman.on('disconnected', function (err) {
+          should(err).equal(null);
           servermock.getNumConnections(function (num) {
             num.should.equal(0);
             done();
           });
-        };
+        });
 
         servermock.getNumConnections(function (num) {
           num.should.equal(1);
@@ -70,7 +62,6 @@ describe('GazeResponseManager', function () {
         });
       });
     });
-
   });
 
   describe('#isConnected', function () {
@@ -86,8 +77,8 @@ describe('GazeResponseManager', function () {
   describe('#requestSetTracker', function () {
 
     beforeEach(function (done) {
-      resman.connect(HOST, PORT, function (isConnected) {
-        isConnected.should.be.True;
+      resman.connect(HOST, PORT, function (err) {
+        should(err).equal(null);
         resman.isConnected().should.be.True;
         done();
       });
@@ -95,7 +86,7 @@ describe('GazeResponseManager', function () {
 
     it('should set tracker values', function (done) {
       resman.requestSetTracker('pull', 1, function callback(err, msg) {
-        (err === null).should.be.True;
+        should(err).equal(null);
         msg.should.be.eql({
           'category': 'tracker',
           'request': 'set',

@@ -11,22 +11,15 @@ describe('GazeApiConnection', function () {
 
   var gazecon, servermock;
 
-  // Tests can listen responses by assigning a function into responseHandler.
-  //   responseHandler = function (msg) { ... };
-  // The value of responseHandler is reseted before each test.
-  var responseHandler = NOOP;
-
   beforeEach(function (done) {
-    responseHandler = NOOP;
-    gazecon = new GazeApiConnection(function onResponse(msg) {
-      responseHandler(msg);
-    });
+    gazecon = new GazeApiConnection();
     servermock = new ServerMock(PORT, function onListen() {
       done();
     });
   });
 
   afterEach(function (done) {
+    gazecon.off();
     gazecon.close(function () {
       servermock.close(function (err) {
         if (err) { console.error(err); throw err; }
@@ -43,10 +36,16 @@ describe('GazeApiConnection', function () {
     });
 
     it('should establish a connection with the server', function (done) {
+      var flag = false;
+      gazecon.on('connected', function () {
+        flag = true;
+      });
+
       servermock.getNumConnections(function (numConnections) {
         numConnections.should.equal(0);
-        gazecon.connect(HOST, PORT, function (isConnected) {
-          isConnected.should.be.True;
+        gazecon.connect(HOST, PORT, function (err) {
+          should(err).equal(null);
+          flag.should.equal(true);
           servermock.getNumConnections(function (numConnections) {
             numConnections.should.equal(1);
             done();
@@ -55,15 +54,38 @@ describe('GazeApiConnection', function () {
       });
     });
 
+    it('should give error if not connected', function () {
+      var flag = 0;
+      gazecon.on('connected', function () {
+        flag += 1
+      });
+      gazecon.on('disconnected', function () {
+        flag += 2;
+      });
+
+      servermock.close(function () {
+        gazecon.connect(HOST, PORT, function (err) {
+          should(err).not.equal(null);
+          gazecon.isConnected().should.equal(false);
+          flag.should.equal(0); // no events fired
+          done();
+        });
+      });
+    });
   });
 
   describe('#close', function () {
     it('closes the connection to the server', function (done) {
-      gazecon.connect(HOST, PORT, function (isConnected) {
-        isConnected.should.be.True;
+      var flag = 0;
+      gazecon.on('disconnected', function () {
+        flag += 1;
+      });
+      gazecon.connect(HOST, PORT, function (err) {
+        should(err).equal(null);
         servermock.getNumConnections(function (num) {
           num.should.equal(1);
           gazecon.close(function () {
+            flag.should.equal(1);
             servermock.getNumConnections(function (num) {
               num.should.equal(0);
               done();
@@ -100,12 +122,8 @@ describe('GazeApiConnection', function () {
     });
 
     it('should send a message object', function (done) {
-      var req = {
-        category: 'tracker',
-        request: 'get',
-        values: ['version', 'push', 'framerate']
-      };
-      responseHandler = function (msg) {
+      gazecon.on('response', function (err, msg) {
+        should(err).equal(null);
         msg.should.be.eql({
           'category': 'tracker',
           'request': 'get',
@@ -117,8 +135,27 @@ describe('GazeApiConnection', function () {
           }
         });
         done();
+      });
+
+      var req = {
+        category: 'tracker',
+        request: 'get',
+        values: ['version', 'push', 'framerate']
       };
       gazecon.sendRequest(req);
+    });
+
+    it('should cause response with error', function (done) {
+      gazecon.on('response', function (err, msg) {
+        should(err).not.equal(null);
+        msg.should.equal('gibberish{}');
+        done();
+      });
+      gazecon.sendRequest({
+        category: 'debug',
+        request: 'echo',
+        values: 'gibberish{}'
+      });
     });
   });
 

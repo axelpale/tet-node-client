@@ -26,6 +26,14 @@ A Node.js client for The Eye Tribe eye-tracker.
       // do cool stuff
     });
 
+    eye.on('connected', function () {
+      // connected to tracker server
+    });
+
+    eye.on('disconnected', function (err) {
+      // err not null if disconnected because of an error.
+    });
+
 Get tracker state values asynchronously:
 
     eye.activate({...}, function (err) {

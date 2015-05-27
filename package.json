@@ -32,6 +32,10 @@
     "start": "python -m SimpleHTTPServer",
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "jshint lib/** test/**",
-    "test:unit": "mocha test/*.test.js"
+    "test:unit": "mocha test/*.test.js",
+    "test:GazeManager": "mocha test/GazeManager.test.js",
+    "test:GazeResponseManager": "mocha test/GazeResponseManager.test.js",
+    "test:GazeApiManager": "mocha test/GazeApiManager.test.js",
+    "test:GazeApiConnection": "mocha test/GazeApiConnection.test.js"
   }
 }

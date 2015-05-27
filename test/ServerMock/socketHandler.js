@@ -22,7 +22,6 @@ var socketHandler = function (socket) {
     var res;
     if (message.category === 'tracker') {
       if (message.request === 'get') {
-        console.log(message);
         res = new Response('tracker', 'get', 200);
         message.values.forEach(function (key) {
           res.addValue(key, tracker.get(key));
@@ -37,6 +36,16 @@ var socketHandler = function (socket) {
       console.error('ServerMock: category "calibration" not yet implemented.');
     } else if (message.category === 'heartbeat') {
       // Do nothing
+    } else if (message.category === 'debug') {
+      if (message.request === 'echo') {
+        if (message.hasOwnProperty('values')) {
+          socket.write(message.values); // Send raw
+        } else {
+          console.error('ServerMock.socketHandler: unknown debug request');
+        }
+      } else {
+        console.error('ServerMock.socketHandler: unknown debug request');
+      }
     }
   };
 

@@ -30,21 +30,50 @@ describe('GazeManager', function () {
   describe('#activate #deactivate #isActivated', function () {
 
     it('should open and close a connection with the server', function (done) {
+      var connected = false;
+      var disconnected = false;
+      gazman.on('connected', function () {
+        connected = true;
+      });
+      gazman.on('disconnected', function (err) {
+        should(err).equal(null);
+        disconnected = true;
+      });
+
       gazman.activate({ port: PORT }, function (err) {
         should(err).be.exactly(null);
         gazman.isActivated().should.equal(true);
+        connected.should.equal(true);
 
         servermock.getNumConnections(function (num) {
           num.should.equal(1);
 
           gazman.deactivate(function () {
             gazman.isActivated().should.equal(false);
+            disconnected.should.equal(true);
 
             servermock.getNumConnections(function (num) {
               num.should.equal(0);
               done();
             });
           });
+        });
+      });
+    });
+
+    it('should emit disconnected with error', function (done) {
+      var disconnected = false;
+      gazman.on('disconnected', function (err) {
+        should(err).not.equal(null);
+        disconnected = true;
+      });
+
+      servermock.close(function (err) {
+        if (err) { console.error(err); return; }
+        gazman.activate({ port: PORT }, function (err) {
+          should(err).not.equal(null);
+          disconnected.should.equal(true);
+          done();
         });
       });
     });

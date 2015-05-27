@@ -30,6 +30,7 @@ var ServerMock = function (port, onListening) {
   var isListening = false;
 
   server = net.createServer(function (socket) {
+    // A new connection
     socketHandler(socket);
   });
 
@@ -60,7 +61,14 @@ var ServerMock = function (port, onListening) {
   // Close
   // @param onClosed function (err)
   this.close = function (onClosed) {
-    server.close(onClosed);
+    if (isListening) {
+      server.close(function () {
+        isListening = false;
+        onClosed();
+      });
+    } else {
+      onClosed();
+    }
   };
 
 
