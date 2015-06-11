@@ -98,6 +98,11 @@ var ServerMock = function (port, onListening) {
     }, 0);
   };
 
+  this.sendGazeUpdate = function () {
+    // Send a sample gaze update event
+    
+  };
+
 };
 
 module.exports = ServerMock;

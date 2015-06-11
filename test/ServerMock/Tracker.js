@@ -28,7 +28,13 @@ var Tracker = function () {
     framerate: 30,
     iscalibrated: false,
     iscalibrating: false,
-    calibresult: {},
+    calibresult: {
+      "result": true,
+      "deg": 2.5,
+      "degl": 2.3,
+      "degr": 2.7,
+      "calibpoints": []
+    },
     frame: {},
     screenindex: 1,
     screenresw: 640,

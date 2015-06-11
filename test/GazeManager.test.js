@@ -121,4 +121,28 @@ describe('GazeManager', function () {
     });
   });
 
+  describe('#getLastCalibrationResult', function () {
+    it('should return calibration object', function (done) {
+      gazman.activate({ port: PORT }, function () {
+        gazman.getLastCalibrationResult(function (err, calib) {
+          should(err).equal(null);
+          calib.should.have.properties('result', 'deg', 'calibpoints');
+          done();
+        });
+      });
+    });
+  });
+
+  describe('#getFrameRate', function () {
+    it('should return framerate', function (done) {
+      gazman.activate({ port: PORT }, function () {
+        gazman.getFrameRate(function (err, framerate) {
+          should(err).equal(null);
+          framerate.should.equal(30);
+          done();
+        });
+      });
+    });
+  });
+
 });

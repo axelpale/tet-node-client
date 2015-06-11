@@ -57,7 +57,7 @@ describe('GazeApiConnection', function () {
     it('should give error if not connected', function () {
       var flag = 0;
       gazecon.on('connected', function () {
-        flag += 1
+        flag += 1;
       });
       gazecon.on('disconnected', function () {
         flag += 2;

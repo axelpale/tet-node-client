@@ -128,6 +128,23 @@ The optional callback `onConnectedCb(err)` will be called once. If activation ha
 Succeeds always.
 
 
+### .getFrameRate(callback(err, framerate))
+
+    eye.getFrameRate(function (err, framerate)) {
+      // framerate, number, e.g. 30
+    });
+
+
+### .getLastCalibrationResult(callback(err, calib))
+
+    eye.getLastCalibrationResult(function (err, calib)) {
+      // calib.result, bool, was calibration successful
+      // calib.deg, number, average error in degrees
+    });
+
+For full list of available properties, see [Eye Tribe Documentation](http://dev.theeyetribe.com/api/#cat_calib).
+
+
 ### .getScreen(callback(err, screen))
 
     eye.getScreen(function (err, screen) {
@@ -165,6 +182,12 @@ An example screen object
     if (eye.isActivated()) {
       // Tracker is active.
     }
+
+
+
+# Run tests
+
+    $ npm run test
 
 
 
