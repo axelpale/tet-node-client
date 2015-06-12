@@ -1,5 +1,5 @@
 var protocol = require('../../lib/protocol');
-var Emitter = require('emitter-component');
+var Emitter = require('component-emitter');
 var GazeUpdateEmitter = require('./GazeUpdateEmitter');
 var _ = require('lodash');
 
